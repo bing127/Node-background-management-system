@@ -1,0 +1,318 @@
+{% include "../includes/common.nsp" %}
+<title>{{ product.productDescription }}</title>
+<script src="/public/static/plugin/js-menu/contabs.js"></script>
+<script src="/public/static/common/js/fullscreen.js"></script>
+<link id="theme-tab" href="/public/static/plugin/js-menu/menuTab-{{ theme if theme!=null else 'blue' }}.css" rel="stylesheet" />
+<body id="" class="theme-whbl  jp-hr" style="">
+<nav class="navbar topnav-navbar navbar-fixed-top" role="navigation">
+    <div class="navbar-header text-center">
+        <button type="button" class="navbar-toggle" id="showMenu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand J_menuItem" href="/sys/home">{{ product.productName }}</a>
+    </div>
+    <div class="collapse navbar-collapse">
+        <form class="navbar-form navbar-left" role="search">
+            <span class="glyphicon glyphicon-search"></span>
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="">
+            </div>
+        </form>
+        <ul class="nav navbar-nav">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"><span
+                        class="glyphicon glyphicon-envelope"></span><span
+                        class="badge badge-green">11</span></a>
+                <ul class="dropdown-menu animated fadeIn">
+                    <li class="messages-top text-center">
+                        你有11 封未读邮件.
+                    </li>
+                    <li class="dropdown-messages">
+                        <a class="J_menuItem" title="站内信" href="${ctx}/iim/mailBox/detail?id=${mailBox.id}">
+                            <div class="message-sender">
+                                ${mailBox.sender.name }
+                                <small class="pull-right">${fns:getTime(mailBox.sendtime)}前</small>
+                            </div>
+                            <div class="message-header">
+                                ${mailBox.mail.overview}
+                                <small class="pull-right">
+                                    <fmt:formatDate value="${mailBox.sendtime}" pattern="yyyy-MM-dd HH:mm:ss"/>
+                                </small>
+                            </div>
+                        </a>
+                    </li>
+                    <li class=" text-center">
+                        <a class="J_menuItem" href="${ctx}/iim/mailBox/list?orderBy=sendtime desc">
+                            <font color='gray'> <i class="fa fa-envelope"></i> 查看所有邮件</font>
+                        </a>
+                    </li>
+                </ul>
+
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                    <span class="glyphicon glyphicon-bell"></span><span class="badge badge-red">11</span>
+                </a>
+                <ul class="dropdown-menu animated fadeIn">
+                    <li class="messages-top text-center">
+                        你有 11 条新通知.
+                    </li>
+                    <li class="dropdown-notifications">
+                        <a class="J_menuItem" href="${ctx}/oa/oaNotify/form?id=${oaNotify.id}&isSelf=true">
+                            <div class="notification">
+                                <i class="fa fa-bell-o"></i> ${fns:abbr(oaNotify.title,50)}
+                                <span class="pull-right text-muted small">${fns:getTime(oaNotify.updateDate)}前</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav pull-right navbar-right">
+            <li class="dropdown color-picker">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                    <span><i class="fa fa-circle"></i></span>
+                </a>
+                <ul class="dropdown-menu pull-right animated fadeIn" role="menu">
+                    <li class="padder-h-xs">
+                        <table class="table color-swatches-table text-center no-m-b">
+                            <tr>
+                                <td class="text-center colorr">
+                                    <a href="#" data-theme="blue" class="theme-picker">
+                                        <i class="fa fa-circle blue-base"></i>
+                                    </a>
+                                </td>
+                                <td class="text-center colorr">
+                                    <a href="#" data-theme="green" class="theme-picker">
+                                        <i class="fa fa-circle green-base"></i>
+                                    </a>
+                                </td>
+                                <td class="text-center colorr">
+                                    <a href="#" data-theme="red" class="theme-picker">
+                                        <i class="fa fa-circle red-base"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-center colorr">
+                                    <a href="#" data-theme="purple" class="theme-picker">
+                                        <i class="fa fa-circle purple-base"></i>
+                                    </a>
+                                </td>
+                                <td class="text-center color">
+                                    <a href="#" data-theme="midnight-blue" class="theme-picker">
+                                        <i class="fa fa-circle midnight-blue-base"></i>
+                                    </a>
+                                </td>
+                                <td class="text-center colorr">
+                                    <a href="#" data-theme="lynch" class="theme-picker">
+                                        <i class="fa fa-circle lynch-base"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" onClick="toggleFullScreen()">
+                    <span>全屏 </span>
+                </a>
+            </li>
+            <li class="dropdown admin-dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                    <img src="{{ userInfo.photo if userInfo.photo!=null else '/public/static/common/images/flat-avatar.png' }}" class="topnav-img" alt=""><span
+                        class="hidden-sm">{{ userInfo.nickname if userInfo.nickname!=null else userInfo.username }}</span>
+                </a>
+                <ul class="dropdown-menu animated fadeIn" role="menu">
+                    <li><a class="J_menuItem" href="/sys/user/imageEdit">修改头像</a>
+                    </li>
+                    <li><a class="J_menuItem" href="/sys/user/info">个人资料</a>
+                    </li>
+                    <li><a class="J_menuItem" href="/iim/contact/index">我的通讯录</a>
+                    </li>
+                    <li><a class="J_menuItem" href="/iim/mailBox/list">信箱</a>
+                    </li>
+                    <li><a href="/sys/logout">安全退出</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <ul class="nav navbar-nav pull-right hidd">
+        <li class="dropdown admin-dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                <img src="{{ userInfo.photo if userInfo.photo!=null else '/public/static/common/images/flat-avatar.png' }}" class="topnav-img" alt=""><span
+                    class="hidden-sm">{{ userInfo.nickname if userInfo.nickname!=null else userInfo.username }}</span>
+            </a>
+            <ul class="dropdown-menu animated fadeIn" role="menu">
+                <li><a class="J_menuItem" href="/sys/user/imageEdit">修改头像</a>
+                </li>
+                <li><a class="J_menuItem" href="/sys/user/info">个人资料</a>
+                </li>
+                <li><a class="J_menuItem" href="/iim/contact/index">我的通讯录</a>
+                </li>
+                <li><a class="J_menuItem" href="/iim/mailBox/list">信箱</a>
+                </li>
+                <li><a href="/sys/logout">安全退出</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+<aside id="sidebar">
+    <div class="sidenav-outer">
+        <div class="side-widgets">
+            <div class="text-center" style="padding-top:10px;">
+                <a href="#"><img class="img-circle user-avatar" src="{{ userInfo.photo if userInfo.photo else '/public/static/common/images/flat-avatar.png' }}"></a>
+                <li class="dropdown admin-dropdown" style="padding-top:10px;">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <font color="white">{{ userInfo.nickname if userInfo.nickname!=null else userInfo.username }}<b class="caret"></b></font>
+                    </a>
+                    <ul class="dropdown-menu animated fade in" style="left:35px" role="menu">
+                        <li><a class="J_menuItem" href="${ctx}/sys/user/imageEdit">修改头像</a>
+                        </li>
+                        <li><a class="J_menuItem" href="${ctx }/sys/user/info">个人资料</a>
+                        </li>
+                        <li><a class="J_menuItem" href="${ctx }/iim/contact/index">我的通讯录</a>
+                        </li>
+                        <li><a class="J_menuItem" href="${ctx }/iim/mailBox/list">信箱</a>
+                        </li>
+                        <hr>
+                        <li><a href="/sys/logout">安全退出</a>
+                        </li>
+                    </ul>
+                </li>
+            </div>
+            <div class="widgets-content">
+                <div class="menu">
+                    <div class="menu-body">
+                        {% macro menuItem(item) %}
+                        <li class="panel">
+                            {% if item.is_show=='1' %}
+                            {% if item.children %}
+                            <a data-toggle="collapse" data-parent="#{{ item.parent_id }}" class="collapsed" href="#{{ item.id }}">
+                                <i class="fa fa {{item.icon }}"></i>&nbsp;&nbsp;{{item.name}}<span class="pull-right fa fa-angle-toggle"></span>
+                            </a>
+                            {% else %}
+                            <a class="J_menuItem" href="{{item.href }}" data-index="{{ loop.index }}"><i class="fa {{item.icon }}"></i>&nbsp;&nbsp;{{ item.name }}</a>
+                            {% endif %}
+                            {% if item.children %}
+                            <ul id="{{ item.id }}" class="nav collapse">
+                                {% for item in item.children %}
+                                {{ menuItem(item) }}
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            {% endif %}
+
+
+
+                        </li>
+
+                        {% endmacro %}
+
+                        <ul class="nav nav-pills nav-stacked sidenav" id="0">
+                            {% for item in menu %}
+                            {{ menuItem(item) }}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</aside>
+<section id="body-container" class="animation">
+    <!--选项卡  -->
+    <div class="main-container" id="main-container">
+        <div class="main-content">
+            <div class="main-content-inner">
+                <div id="breadcrumbs" class="breadcrumbs">
+                        <div class="content-tabs">
+                            <button id="hideMenu" class="roll-nav roll-left-0 J_tabLeft"><i
+                                    class="fa fa-align-justify"></i>
+                            </button>
+                            <button class="roll-nav roll-left J_tabLeft"><i class="fa fa-backward"></i>
+                            </button>
+                            <nav class="page-tabs J_menuTabs">
+                                <div class="page-tabs-content">
+                                    <a href="javascript:;" class="active J_menuTab" data-id="/sys/home">首页</a>
+                                </div>
+                            </nav>
+                            <button class="roll-nav roll-right J_tabRight"><i class="fa fa-forward"></i>
+                            </button>
+                            <a href="/sys/logout" class="roll-nav roll-right J_tabExit">
+                                <i class="fa fa fa-sign-out"></i>
+                                退出
+                            </a>
+                    </div>
+                </div>
+                    <div class="J_mainContent" id="content-main"
+                         style="height:calc(100% - 40px)">
+                            <iframe class="J_iframe" name="iframe0" width="100%" height="100%" src="/sys/home"
+                                    frameborder="0"
+                                    data-id="/sys/home"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <div class="pull-left"><a href="{{ product.productUrl }}">{{ product.productUrl }}</a> &copy; {{ product.copyright }}
+                </div>
+            </div>
+    </div>
+</section>
+<script>
+    $(function () {
+        $('#calendar2').fullCalendar({
+            eventClick: function (calEvent, jsEvent, view) {
+                alert('Event: ' + calEvent.title);
+                alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+                alert('View: ' + view.name);
+            }
+        });
+        $('#rtlswitch').click(function () {
+            $('body').toggleClass('rtl');
+            var hasClass = $('body').hasClass('rtl');
+        });
+        $('.theme-picker').click(function () {
+            changeTheme($(this).attr('data-theme'));
+        });
+        $('#showMenu').click(function () {
+            $('body').toggleClass('push-right');
+        });
+        $('#hideMenu').click(function () {
+            $('body').removeClass('push-right')
+            $('body').toggleClass('push-left');
+        });
+    });
+
+    function changeTheme(theme) {
+        var link = $('<link>')
+            .appendTo('head')
+            .attr({type: 'text/css', rel: 'stylesheet'})
+            .attr('href', '/public/static/common/css/app-' + theme + '.css');
+        var tabLink = $('<link>')
+            .appendTo('head')
+            .attr({type: 'text/css', rel: 'stylesheet'})
+            .attr('href', '/public/static/plugin/js-menu/menuTab-' + theme + '.css');
+        var childrenLink = $('<link>').appendTo($(".J_iframe").contents().find("head"))
+            .attr({type: 'text/css', rel: 'stylesheet'})
+            .attr('href', '/public/static/common/css/app-' + theme + '.css');
+        $.get('/theme/set?name='+theme+'&url='+window.top.location.href, function (result) {
+            $('#theme').remove();
+            $('#theme-tab').remove();
+            $(".J_iframe").contents().find("#theme").remove();
+            link.attr("id", "theme");
+            childrenLink.attr("id", "theme");
+            tabLink.attr("id", "theme-tab")
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+
+		.photo:hover .mask {
+			display: block;
+		}
+		.photo .mask {
+			display: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			background-color: rgba(0, 0, 0, 0.3);
+		}
+		.photo .mask .opts {
+			width: 100%;
+			height: 2rem;
+			line-height: 1rem;
+			position: absolute;
+			top: 50%;
+			margin-top: -0.5rem;
+			text-align: center;
+		}
+		.photo .mask .opts .opt-item {
+			color: #2196F3;
+			display: inline-block;
+			padding: 0 0.3rem;
+			margin: 0.4rem 0;
+			cursor: pointer;
+			font-size: 1.4rem;
+		}
+		 .photo .mask .opts .opt-item:not(:first-child) {
+			border-left: 1px solid #2196F3;
+		}
+		.photo .mask .opts .opt-item:hover {
+			color: #fff;
+		}
+
+		.config-card {
+			height: 17rem;
+			position: relative;
+			border: 1px solid #7eb1b9;
+			box-sizing: border-box;
+			border-radius: 0.4rem;
+			overflow: hidden;
+			margin-bottom: 10px;
+
+		}
+		.config-card .head {
+			line-height: 4rem;
+			border-bottom: 1px solid #7eb1b9;
+			border-radius: 0.4rem;
+			font-size: 1.6rem;
+			position: relative;
+		}
+		.config-card .head .title {
+			border-left: 0.4rem solid #2196f3;
+			padding-left: 0.6rem;
+		}
+		.config-card .head .circle {
+			position: absolute;
+			width: 4rem;
+			height: 4rem;
+			bottom: -2rem;
+			left: 50%;
+			margin-left: -2rem;
+			line-height: 4rem;
+			text-align: center;
+			border: 1px solid #7eb1b9;
+			border-radius: 2rem;
+			z-index: -1;
+		}
+		.config-card .head .line {
+			position: absolute;
+			width: 3.8rem;
+			height: 1rem;
+			left: 50%;
+			margin-left: -1.9rem;
+			bottom: -1px;
+		}
+		.config-card .head .priority {
+			position: absolute;
+			width: 3rem;
+			height: 3rem;
+			bottom: -1.5rem;
+			left: 50%;
+			margin-left: -1.5rem;
+			line-height: 3rem;
+			text-align: center;
+			font-size: 1.8rem;
+			border-radius: 2rem;
+		}
+		.config-card .head .priority.high {
+			color: #E24034;
+		}
+		.config-card .head .priority.mid {
+			color: #EB7D75;
+		}
+		.config-card .head .priority.low {
+			color: #EF971C;
+		}
+		.config-card.add {
+			color: #56abe4;
+			font-size: 10rem;
+			text-align: center;
+			line-height: 14rem;
+		}
+		.config-card.add:hover span {
+			color: #2196f3;
+		}
+		.config-card:hover .mask {
+			display: block;
+		}
+		.config-card .mask {
+			display: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			background-color: rgba(0, 0, 0, 0.3);
+		}
+		.config-card .mask .opts {
+			width: 100%;
+			height: 2rem;
+			line-height: 1rem;
+			position: absolute;
+			top: 50%;
+			margin-top: -0.5rem;
+			text-align: center;
+		}
+		.config-card .mask .opts .opt-btn {
+			cursor: pointer;
+			font-size: 1.4rem;
+			margin: 0.2rem 0.4rem;
+		}
+		.config-card .mask .opts.three .opt-btn {
+			margin: 0.2rem 0;
+		}

@@ -1,0 +1,233 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/bootstraptable.nsp" %}
+<html>
+<head>
+    <title>菜单管理</title>
+    <meta name="decorator" content="ani"/>
+</head>
+<body class="bg-white">
+<form id="inputForm" modelAttribute="menu" action="/sys/menu/save" method="post" class="form-horizontal">
+    <input type="hidden" id="id" name="id" value="{{ menu[0].id if menu[0].id else '' }}"/>
+    <table class="table table-bordered">
+        <tbody>
+        <tr>
+            <td class="width-15 active"><label class="pull-right"><font color="red">*</font> 上级菜单:</label></td>
+            <td class="width-35">
+                <input id="menuId" name="parent.id" class="form-control required form-control" type="hidden"
+                       value="{{ menu[0].parent_id if menu[0].parent_id else '0' }}"
+                       aria-required="true">
+                <div class="input-group" style="width:100%">
+                    <input id="menuName" name="parent.name" readonly="readonly" type="text"
+                           value="{{ menu[1].name if menu[1].name!=null else '功能菜单' }}"
+                           data-msg-required="" class="form-control required" style="" aria-required="true">
+                    <span class="input-group-btn">
+                         <button type="button" id="menuButton" class="btn  btn-primary"><i class="fa fa-search"></i>
+                         </button>
+                         <button type="button" id="menuDelButton" class="close" data-dismiss="alert"
+                                 style="position: absolute; top: 5px; right: 53px; z-index: 999; display: block;">×</button>
+       		        </span>
+                </div>
+                <label id="menuName-error" class="error" for="menuName" style="display:none"></label>
+            </td>
+            <td class="width-15 active"><label class="pull-right"><font color="red">*</font> 名称:</label></td>
+            <td class="width-35">
+                <input id="name" name="name" htmlEscape="false" value="{{ menu[0].name if menu[0].name else '' }}"
+                       maxlength="50" class="required form-control "/>
+            </td>
+        </tr>
+        <tr>
+            <td class="active"><label class="pull-right">链接:</label></td>
+            <td>
+                <input name="href" id="href" value="{{ menu[0].href if menu[0].href else '' }}" maxlength="2000"
+                       class="form-control "/>
+                <span class="help-inline">点击菜单跳转的页面</span></td>
+            <td class="active"><label class="pull-right">图标:</label></td>
+            <td>
+                <i id="iconIcon" class="fa {{ menu[0].icon if menu[0].icon else 'hide' }}"></i>&nbsp;<span
+                    id="iconIconLabel">{{ menu[0].icon if menu[0].icon!=null else '无' }}</span>&nbsp;
+                <input id="icon" name="icon" type="hidden" value="{{ menu[0].icon if menu[0].icon else '' }}">
+                <a id="iconButton" href="javascript:" class="btn btn-primary">选择</a>&nbsp;&nbsp;
+                <input id="iconclear" class="btn btn-default" type="button" value="清除" onclick="clear()">
+            </td>
+        </tr>
+        <tr>
+            <td class="active"><label class="pull-right">可见:</label></td>
+            <td>
+               {% if menu[0].is_show=='1' %}
+                <span>
+                    <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow1" name="isShow" class="required i-checks " type="radio" value="1"
+                           checked="checked"/>
+                        </div>
+                         <label for="isShow1" class="">显示</label>
+                </span>
+                <span>
+                        <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow2" name="isShow" class="required i-checks " type="radio" value="0"/>
+                    </div>
+                    <label for="isShow2" class="">隐藏</label>
+                         </span>
+                {% elif menu[0].is_show=='0' %}
+                <span>
+                <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow1" name="isShow" class="required i-checks " type="radio" value="1"/>
+                    </div>
+                    <label for="isShow1" class="">显示</label>
+                </span>
+                <span>
+                    <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow2" name="isShow" class="required i-checks " type="radio" value="0"
+                           checked="checked"/>
+                   </div>
+                    <label for="isShow2" class="">隐藏</label>
+                </span>
+                {% else %}
+                <span>
+                    <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow1" name="isShow" class="required i-checks " type="radio" value="1"
+                           checked="checked"/>
+                        </div>
+                         <label for="isShow1" class="">显示</label>
+                </span>
+                <span>
+                        <div class="iradio_square-midnight-blue" style="position: relative;">
+                    <input id="isShow2" name="isShow" class="required i-checks " type="radio" value="0"/>
+                    </div>
+                    <label for="isShow2" class="">隐藏</label>
+                         </span>
+                {% endif %}
+                </span>
+                <span class="help-inline">该菜单或操作是否显示到系统菜单中</span></td>
+        </tr>
+        </tbody>
+    </table>
+</form>
+</body>
+</html>
+<script type="text/javascript">
+    var validateForm;
+    var $treeTable; // 父页面table表格id
+    var $topIndex;//openDialog的 dialog index
+    function doSubmit(treeTable, index) {//回调函数，在编辑和保存动作时，供openDialog调用提交表单。
+        if (validateForm.form()) {
+            $treeTable = treeTable;
+            $topIndex = index;
+            $("#inputForm").submit();
+            return true;
+        }
+        return false;
+    }
+
+    $(document).ready(function () {
+        $("#name").focus();
+        validateForm = $("#inputForm").validate({
+            submitHandler: function (form) {// 必须写在验证前面，否则无法ajax提交
+                jp.loading();
+                jp.post("/sys/menu/save", $('#inputForm').serialize(), function (data) {
+                    if (data.success) {
+                        var current_id = data.body.menu.id;
+                        var target = $treeTable.get(current_id);
+                        var old_parent_id = target.attr("pid") == undefined ? '1' : target.attr("pid");
+                        var current_parent_id = data.body.menu.parent_id;
+                        if (old_parent_id == current_parent_id) {
+                            if (current_parent_id == '0') {
+                                $treeTable.refreshPoint(-1);
+                            } else {
+                                $treeTable.refreshPoint(current_parent_id);
+                            }
+                        } else {
+                            $treeTable.del(current_id);
+                            $treeTable.initParents(current_parent_id, "0");
+                        }
+                        jp.success(data.msg);
+                    } else {
+                        jp.error(data.msg);
+                    }
+                    jp.close($topIndex);//关闭dialog
+                });
+            },
+            errorPlacement: function (error, element) {// 自定义提示错误位置
+                $("#messageBox").text("输入有误，请先更正。");
+                if (element.is(":checkbox") || element.is(":radio") || element.parent().is(".input-append")) {
+                    error.appendTo(element.parent().parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+    });
+    $(document).ready(function () {
+        $("#menuButton, #menuName").click(function () {
+            // 是否限制选择，如果限制，设置为disabled
+            if ($("#menuButton").hasClass("disabled")) {
+                return true;
+            }
+            // 正常打开
+            top.layer.open({
+                type: 2,
+                area: ['300px', '420px'],
+                title: "选择菜单",
+                ajaxData: {selectIds: $("#menuId").val()},
+                content: "/tag/treeselect?extId={{ menu[0].id if menu[0].id!=null else 'hide' }}",
+                btn: ['确定', '关闭']
+                , yes: function (index, layero) { //或者使用btn1
+                    var tree = layero.find("iframe")[0].contentWindow.tree;//h.find("iframe").contents();
+                    var ids = [], names = [], nodes = [];
+                    if ("" == "true") {
+                        nodes = tree.get_checked(true);
+                    } else {
+                        nodes = tree.get_selected(true);
+                    }
+                    for (var i = 0; i < nodes.length; i++) {//
+                        ids.push(nodes[i].id);
+                        names.push(nodes[i].text);//
+                        break; // 如果为非复选框选择，则返回第一个选择
+                    }
+                    $("#menuId").val(ids.join(",").replace(/u_/ig, ""));
+                    $("#menuName").val(names.join(","));
+                    $("#menuName").focus();
+                    top.layer.close(index);
+                },
+                cancel: function (index) { //或者使用btn2
+                    //按钮【按钮二】的回调
+                }
+            });
+        });
+        $("#menuDelButton").click(function () {
+            // 是否限制选择，如果限制，设置为disabled
+            if ($("#menuButton").hasClass("disabled")) {
+                return true;
+            }
+            // 清除
+            $("#menuId").val("");
+            $("#menuName").val("");
+            $("#menuName").focus();
+
+        });
+    })
+    $(document).ready(function () {
+        $("#iconButton").click(function () {
+            top.layer.open({
+                type: 2,
+                title: "选择图标",
+                area: ['700px', $(top.document).height() - 180 + "px"],
+                content: '/tag/iconselect?value="+$("#icon").val()',
+                btn: ['确定', '关闭'],
+                yes: function (index, layero) { //或者使用btn1
+                    var icon = layero.find("iframe")[0].contentWindow.$("#icon").val();
+                    $("#iconIcon").attr("class", icon);
+                    $("#iconIconLabel").text(icon);
+                    $("#icon").val(icon);
+                    top.layer.close(index);
+                }, cancel: function (index) { //或者使用btn2
+                }
+            });
+        });
+        $("#iconclear").click(function () {
+            $("#iconIcon").attr("class", "icon- hide");
+            $("#iconIconLabel").text("无");
+            $("#icon").val("");
+        });
+    })
+</script>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10" />
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-store">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <link rel="shortcut icon" href="/public/static/favicon.ico">
+    <!-- 引入neeplus ajax版本库文件，该文件压缩了jQuery，datatime等常用js文件以提高加载速度 -->
+    <link rel="stylesheet" href="/public/static/common/css/vendor.css" />
+    <script src="/public/static/common/vendor/ckeditor/ckeditor.js" type="text/javascript"></script>
+    <script src="/public/static/common/js/vendor.js"></script><!-- 该插件已经集成jquery 无需重复引入 -->
+    <script src="/public/static/common/js/moment-locales.js"></script><!-- 语言环境插件 -->
+    <link href="/public/static/plugin/awesome/4.4/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- 引入依赖的第三方插件 -->
+    <script src="/public/static/plugin/jquery-plugin/jquery.serializejson.min.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/jquery-plugin/jquery.form.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/jquery-plugin/jquery.contextMenu.min.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/jquery-plugin/jquery.ui.position.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="/public/static/plugin/jquery-plugin/jquery.contextMenu.min.css">
+    <script src="/public/static/plugin/jquery-validation/1.14.0/jquery.validate.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/jquery-validation/1.14.0/localization/messages_zh.min.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/jquery-validation/1.14.0/validation-methods.js" type="text/javascript"></script>
+    <link href="/public/static/plugin/icheck-1.x/skins/square/_all.css" rel="stylesheet" />
+    <script src="/public/static/plugin/icheck-1.x/icheck.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('input.i-checks').iCheck({
+                checkboxClass:"icheckbox_square-{{ theme if theme!=null else 'blue' }}",
+                radioClass: "icheckbox_square-{{ theme if theme!=null else 'blue' }}",
+                increaseArea: '20%' // optional
+            });
+        });
+    </script>
+
+    <link href="/public/static/plugin/city-picker/css/city-picker.css" rel="stylesheet" type="text/css"/>
+    <script src="/public/static/plugin/city-picker/js/city-picker.data.js" type="text/javascript"></script>
+    <script src="/public/static/plugin/city-picker/js/city-picker.js" type="text/javascript"></script>
+
+    <!-- 引入layer插件,当做独立组件使用，不使用layui模块，该版本修复了chrome下花屏的bug -->
+    <script src="/public/static/plugin/layui/layer/layer.js"></script>
+    <script src="/public/static/plugin/layui/laytpl/laytpl.js"></script>
+    <script src="/public/static/plugin/art-template/art-template.js"></script>
+    <script src="/public/static/plugin/layui/dist/layui.js"></script>
+
+    <!--引入另一个模板文件当做laytpl模板的备用-->
+    <script src="/public/static/plugin/tpl/mustache.min.js" type="text/javascript"></script>
+    <!--引入webuploader-->
+    <link rel="stylesheet" type="text/css" href="/public/static/plugin/webuploader/webuploader.css">
+    <script type="text/javascript" src="/public/static/plugin/webuploader/webuploader.min.js"></script>
+    <!-- 引入toastr -->
+    <link rel="stylesheet" type="text/css" href="/public/static/plugin/toastr/toastr.css">
+    <script type="text/javascript" src="/public/static/plugin/toastr/toastr.min.js"></script>
+    <script type="text/javascript">
+        var ctxStatic = '/public/static';
+    </script>
+    <link rel="stylesheet" id="theme" href="/public/static/common/css/app-{{ theme if theme!=null else 'blue' }}.css" />
+    <script src="/public/static/common/js/neeplus.js"></script>
+</head>

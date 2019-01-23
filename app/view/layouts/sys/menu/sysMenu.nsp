@@ -1,0 +1,149 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/bootstraptable.nsp" %}
+<script type="text/javascript">
+    var $treeTable = null;
+    $(document).ready(function () {
+        $treeTable = $('#treeTable').treeTable({
+            theme: 'vsStyle',
+            expandLevel:1,
+            column: 0,
+            checkbox: false,
+            url: '/sys/menu/getChildren?parentId=',
+            callback: function (item) {
+                item.is_show = (item.is_show == '1' ? true : false);
+                if (item.href && item.href.length > 20) {
+                    item.hideFullName = item.href.substring(0, 20) + "...";
+                } else if (item.href == undefined) {
+                    item.hideFullName = "";
+                } else {
+                    item.hideFullName = item.href;
+                };
+                var result = template('menuItemTpl',{d: item});
+                return result;
+            },
+            beforeClick: function ($treeTable, id) {
+                $treeTable.refreshPoint(id);
+            },
+            beforeExpand: function ($treeTable, id) {
+            },
+            beforeClose: function ($treeTable, id) {
+            }
+        });
+    });
+    function del(con, id,pid) {
+        jp.confirm('确认要删除菜单吗？', function () {
+            jp.loading();
+            $.get("/sys/menu/delete?id=" + id + '&pid=' + pid, function (data) {
+                if (data.success) {
+                    $treeTable.del(id);
+                    jp.success(data.msg);
+                } else {
+                    jp.error(data.msg);
+                }
+            })
+        });
+    }
+    function refresh() {
+        var index = jp.loading();
+        $treeTable.refresh();
+        jp.close(index);
+    }
+</script>
+<script id="menuItemTpl" type="text/html">
+    <td><a href="#" onclick="jp.openDialogView('查看菜单', '/sys/menu/form?id=<%= d.id  %>','800px', '310px')"> <i
+            class="fa <%= d.icon  %>"></i> <%= d.name  %></a></td>
+    <td title="<%= d.href  %>"><%= d.hideFullName  %></td>
+    <td>
+        <% if (d.is_show == '1') { %>
+        <i class="fa fa-circle text-success ml5"></i>
+        <% } else if (d.is_show == '0') { %>
+        <i class="fa fa-circle text-muted ml5"></i>
+        <% } else { %>
+        <i class="fa fa-circle text-success ml5"></i>
+        <% } %>
+    </td>
+    <td>
+        <div class="btn-group">
+            <button type="button" class="btn  btn-primary btn-xs dropdown-toggle" data-toggle="dropdown">
+                <i class="fa fa-cog"></i>
+                <span class="fa fa-chevron-down"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                    <li><a href="#"
+                           onclick="jp.openDialogView('查看菜单', '/sys/menu/form?id=<%= d.id  %>','800px', '510px')"><i
+                            class="fa fa-search-plus"></i> 查看</a></li>
+                {% if userRole.permission === '1' %}
+                <li><a href="#"
+                           onclick="jp.openDialog('修改菜单', '/sys/menu/form?id=<%= d.id  %>','800px', '510px', $treeTable)"><i
+                            class="fa fa-edit"></i> 修改</a></li>
+                    <li><a onclick="return del(this, '<%= d.id  %>', '<%= d.parent_id  %>')"><i class="fa fa-trash"></i> 删除</a></li>
+                    <!--<li><a href="#"-->
+                           <!--onclick="jp.openDialog('添加下级菜单', '/sys/menu/form?parent.id=<%= d.id  %>','800px', '510px', $treeTable)"><i-->
+                            <!--class="fa fa-plus"></i> 添加下级菜单</a></li>-->
+                {% endif %}
+            </ul>
+        </div>
+            <!--<button type="button" onclick="setDataRule('<%= d.id  %>','<%= d.name %>')" class="btn  btn-primary btn-xs">-->
+                <!--<i class="fa fa-database"> 数据规则</i>-->
+            <!--</button>-->
+    </td>
+</script>
+<body>
+<div class="wrapper wrapper-content">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">菜单列表</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div id="left" class="col-sm-12">
+                    <!-- 工具栏 -->
+                    <div id="toolbar" class="treetable-bar">
+                        {% if userRole.permission === '1' %}
+                        <a id="add" class="btn btn-primary"
+                           onclick="jp.openDialog('新建菜单', '/sys/menu/form','800px', '400px', $treeTable)"><i
+                                class="glyphicon glyphicon-plus"></i> 新建菜单</a>
+                        {% endif %}
+                        <button class="btn btn-default" data-toggle="tooltip" data-placement="left" onclick="refresh()"
+                                title="刷新"><i class="glyphicon glyphicon-repeat"></i> 刷新
+                        </button>
+                    </div><!-- 工具栏结束 -->
+                    <table id="treeTable" class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>链接</th>
+                            <th>显示/隐藏</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="right" class="panel panel-default col-sm-6" style="display:none">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><label>数据规则列表，所属菜单: </label><font id="menuLabel"></font><input
+                                type="hidden" id="menuId"/></h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="dataRuleToolbar">
+                            {% if userRole.permission === '1' %}
+                            <button id="dataRuleAddButton" class="btn btn-outline btn-primary" title="添加规则"><i
+                                    class="fa fa-plus"></i> 添加规则
+                            </button>
+                            {% endif %}
+                        </div>
+                        <!-- 表格 -->
+                        <table id="dataRuleTable"
+                               data-toolbar="#dataRuleToolbar"
+                               data-id-field="id">
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

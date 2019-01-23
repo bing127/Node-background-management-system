@@ -1,0 +1,162 @@
+{% include "../../includes/common.nsp" %}
+{% include "../../includes/bootstraptable.nsp" %}
+<script type="text/javascript">
+    var validateForm;
+    var $table; // 父页面table表格id
+    var $topIndex;//弹出窗口的 index
+    function doSubmit(table, index) {//回调函数，在编辑和保存动作时，供openDialog调用提交表单。
+        if (validateForm.form()) {
+            $table = table;
+            $topIndex = index;
+            jp.loading();
+            $("#inputForm").submit();
+            return true;
+        }
+
+        return false;
+    }
+
+    $(document).ready(function () {
+        $("#no").focus();
+        validateForm = $("#inputForm").validate({
+            rules: {
+                loginName: {remote: "/sys/user/checkLoginName?oldLoginName=" + encodeURIComponent('${user.loginName}')}
+            },
+            messages: {
+                loginName: {remote: "用户登录名已存在"},
+                confirmNewPassword: {equalTo: "输入与上面相同的密码"}
+            },
+            submitHandler: function (form) {
+                jp.post("/sys/user/save", $('#inputForm').serialize(), function (data) {
+                    if (data.success) {
+                        $table.bootstrapTable('refresh');
+                        jp.success(data.msg);
+
+                    } else {
+                        jp.error(data.msg);
+                    }
+
+                    jp.close($topIndex);//关闭dialog
+                });
+
+            },
+            errorContainer: "#messageBox",
+            errorPlacement: function (error, element) {
+                $("#messageBox").text("输入有误，请先更正。");
+                if (element.is(":checkbox") || element.is(":radio") || element.parent().is(".input-append")) {
+                    error.appendTo(element.parent().parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+    });
+
+    function photoFileDialogOpen() {
+        var currentFileValues = $("input[name='photo']").val();
+        jp.open({
+            type: 2,
+            area: ['800px', '300px'],
+            title: "上传文件",
+            auto: true,
+            content: "/sys/upload",
+            cancel: function (index, layero) {
+                var iframeWin = layero.find('iframe')[0]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
+                var fileNames = iframeWin.contentWindow.getUploadFileNames();//调用保存事件
+                var fileValues = iframeWin.contentWindow.getUploadFileValues();//调用保存事件
+                $("#photo").val(fileNames);
+                $("input[name='photo']").val(fileValues);
+            }
+        });
+    }
+
+</script>
+<body class="bg-white">
+<form id="inputForm" modelAttribute="user" action="/sys/user/save" method="post" class="form-horizontal">
+    <input type="hidden" id="id" name="id" value="{{ user.id }}">
+    <table class="table table-bordered">
+        <tbody>
+        <tr>
+            <td class="width-15 active">
+                <label class="pull-right"><font color="red">*</font>头像：</label>
+            </td>
+            <td class="width-35">
+                <div class="input-group" style="width:100%">
+                    <input type="hidden" name="photo" value="{{ user.photo }}">
+                    <input type="text" id="photo" value="{{ user.photo }}" class="form-control" readonly="readonly">
+                    <span class="input-group-btn">
+	       		 <button type="button" id="photoButton" onclick="photoFileDialogOpen();" class="btn btn-primary "><i
+                         class="fa fa-cloud-upload"></i></button>
+       		 </span>
+                </div>
+            </td>
+            <td class="active"><label class="pull-right">是否允许登录:</label></td>
+            <td>
+                <select id="loginFlag" name="loginFlag" class="form-control">
+                    {% if user.is_login == '1' %}
+                    <option value="1" selected="selected">是</option>
+                    <option value="0">否</option>
+                    {% elif user.is_login == '2' %}
+                    <option value="1">是</option>
+                    <option value="0" selected="selected">否</option>
+                    {% else %}
+                    <option value="1" selected="selected">是</option>
+                    <option value="0">否</option>
+                    {% endif %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="active"><label class="pull-right"><font color="red">*</font>昵称:</label></td>
+            <td>
+                <input type="text" id="nickname" value="{{ user.nickname }}" name="nickname" maxlength="50" class="form-control required"/>
+            </td>
+            <td class="active"><label class="pull-right"><font color="red">*</font>登录名:</label></td>
+            <td>
+                <input type="text" id="username" value="{{ user.username }}" name="username" maxlength="50" class="form-control required"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="active">
+                <label class="pull-right"><font color="red">*</font>密码:</label></td>
+            <td>
+                <input type="text" id="password" name="password" maxlength="50" value="" class="form-control {{'' if user.id!=null else 'required' }}"/>
+                {% if user.id != null %}
+                <span class="help-inline">若不修改密码，请留空。</span>
+                {% endif %}
+            </td>
+            <td class="active"><label class="pull-right">邮箱:</label></td>
+            <td>
+                <input type="text" id="email" name="email" value="{{ user.email }}" maxlength="100" class="form-control email"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="active"><label class="pull-right">手机:</label></td>
+            <td>
+                <input id="phone" name="phone" value="{{ user.phone }}" maxlength="100" class="form-control"/>
+            </td>
+            <td class="active"><label class="pull-right"><font color="red">*</font>用户角色:</label></td>
+            <td>
+                {% for item in role %}
+                   <span>
+                        <input type="radio" {{'checked' if item.id === user.role_id else '' }} id="isShow{{ loop.index }}" value="{{ item.id }}" name="isShow" class="required i-checks">
+                        <label for="isShow{{ loop.index }}" class="">{{ item.name }}</label>
+                    </span>
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            {% if user.id %}
+            <td class="">
+                <label class="pull-right">创建时间:</label></td>
+            <td><span class="lbl">{{ user.created_at }}</span></td>
+            <td class=""><label class="pull-right">最后登陆:</label></td>
+            <td><span class="lbl">IP:{{ user.ip }}&nbsp;&nbsp;&nbsp;&nbsp;时间：{{ user.updated_at }}</span></td>
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
+</form>
+</body>
+</html>

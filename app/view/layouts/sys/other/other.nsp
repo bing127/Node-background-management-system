@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    {% include "../../../includes/common.nsp" %}
+</head>
+<body>
+<div class="wrapper wrapper-content">
+<div class="row animated fadeInRight">
+    <div class="col-sm-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-rss-square"></i> 服务器信息
+            </div>
+
+            <div class="panel-body">
+                <table class="table table-striped table-bordered table-hover">
+                    <tbody>
+                    <tr>
+                        <td class="left">本机IP地址</td>
+                        <td class="left">{{ info.localIP }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">网络IP地址</td>
+                        <td class="left">{{ info.networkInterfaces }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">Node版本</td>
+
+                        <td class="left" id="hostName">{{ info.nodeVersion }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">操作系统的名称</td>
+
+                        <td class="left" id="osName">{{ info.type }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">操作系统的版本</td>
+
+                        <td class="left" id="osVersion">{{ info.release }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">系统内存</td>
+
+                        <td class="left">{{ info.totalmem }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">系统空闲内存</td>
+
+                        <td class="left">{{ info.freemem }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">当前用户根目录</td>
+
+                        <td class="left">{{ info.homedir }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">临时文件目录</td>
+
+                        <td class="left">{{ info.tmpdir }}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">系统已运行</td>
+
+                        <td class="left">{{ info.uptimeStr }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>

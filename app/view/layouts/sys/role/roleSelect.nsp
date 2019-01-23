@@ -1,0 +1,40 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/treeview.nsp" %}
+<script>
+    var tree;
+    $(document).ready(function () {
+        $('#menuTree').jstree({
+            'core' : {
+                "multiple" : true,
+                "animation" : 0,
+                "themes" : { "icons":true ,"stripes":false},
+                'data' : {
+                    "url" : "/sys/role/treeselect",
+                    "dataType" : "json" // needed only if you do not supply JSON headers
+                }
+            },
+            'plugins' : [ "checkbox", 'types' , 'wholerow'],
+            "types":{
+                'default' : {
+                    'icon' : 'fa fa-folder'
+                },
+                'html' : {
+                    'icon' : 'fa fa-file-code-o'
+                },
+                'btn':{'icon' : 'fa fa-square'}
+            },
+            'checkbox' : {
+                // 禁用级联选中
+                'three_state' : false,
+                'cascade' : 'undetermined|down|up' //有三个选项，up, down, undetermined; 使用前需要先禁用three_state
+            },
+        });
+        tree = $('#menuTree').jstree(true);
+    })
+</script>
+<body>
+<div class="row">
+    <div id="menuTree" ></div>
+</div>
+</body>
+</html>

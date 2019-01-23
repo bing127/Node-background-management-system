@@ -1,0 +1,6 @@
+<link href="/public/static/plugin/bootstrapTable/bootstrap-table.css" rel="stylesheet" />
+<script src="/public/static/plugin/bootstrapTable/bootstrap-table.js"></script>
+<script src="/public/static/plugin/bootstrapTable/bootstrap-table-zh-CN.js"></script>
+<script src="/public/static/plugin/bootstrapTable/bootstrap-table-contextmenu.js"></script>
+<script src="/public/static/plugin/bootstrapTable/bootstrap-table-export.js"></script>
+<script src="/public/static/plugin/bootstrapTable/tableExport.js"></script>

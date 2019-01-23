@@ -1,0 +1,13 @@
+tr.myDragClass td {
+    /*position: fixed;*/
+    color: blue;
+    text-shadow: 0 0 10px black, 0 0 10px black, 0 0 8px black, 0 0 6px black, 0 0 6px black;
+    background-color: #999;
+    -webkit-box-shadow: 0 12px 14px -12px #111 inset, 0 -2px 2px -1px #333 inset;
+}
+tr.myDragClass td:first-child {
+    -webkit-box-shadow: 0 12px 14px -12px #111 inset, 12px 0 14px -12px #111 inset, 0 -2px 2px -1px #333 inset;
+}
+tr.myDragClass td:last-child {
+    -webkit-box-shadow: 0 12px 14px -12px #111 inset, -12px 0 14px -12px #111 inset, 0 -2px 2px -1px #333 inset;
+}

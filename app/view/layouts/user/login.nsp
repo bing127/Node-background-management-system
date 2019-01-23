@@ -1,0 +1,104 @@
+{% include "../../includes/common.nsp" %}
+<title>{{ product.productDescription }} 登录</title>
+<style>
+    #messageBox{
+      color: #cc5965;
+    }
+    form .form-left {
+        width: 72%;
+        float: left;
+    }
+    form .form-right {
+        float: right;
+        width: 24%;
+    }
+    form .form-left input{
+        height: 44px;
+        font-size: 16px;
+        text-indent: 0;
+        outline: none;
+        padding: 0 16px;
+        box-sizing: border-box;
+        color: #fff;
+    }
+    #code{
+        overflow: hidden;
+        border-radius: 6px;
+        height: 44px;
+    }
+</style>
+<script>
+    if (window.top !== window.self) {
+        window.top.location = window.location;
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#loginForm").validate({
+            rules: {},
+            messages: {
+                username: {required: "请填写用户名."}, password: {required: "请填写密码."},
+                validateCode: {remote: "验证码不正确.", required: "请填写验证码."}
+            },
+            errorLabelContainer: "#messageBox",
+            errorPlacement: function (error, element) {
+                error.appendTo($("#loginError").parent());
+            }
+        });
+    });
+    // 如果在框架或在对话框中，则弹出提示并跳转到首页
+    if (self.frameElement && self.frameElement.tagName == "IFRAME" || $('#left').length > 0 || $('.jbox').length > 0) {
+        alert('未登录或登录超时。请重新登录，谢谢！');
+        top.location = "/";
+    }
+</script>
+<body>
+<div class="login-page">
+    <div class="row">
+        <div class="col-md-4 col-lg-4 col-md-offset-4 col-lg-offset-4" style="margin-top:5%">
+            <img class="img-circle" src="/public/static/common/images/flat-avatar.png" class="user-avatar"/>
+            <h1>{{ product.productName }}</h1>
+            <div id="messageBox" showType="1">
+                {{ msg }}
+            </div>
+            <form id="loginForm" role="form" action="/sys/loginAction" method="post">
+                <div class="form-content">
+                    <div class="form-group">
+                        <input type="text" id="username" name="username"
+                               class="form-control input-underline input-lg required" autocomplete="off"
+                               placeholder="用户名">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" name="password" autocomplete="off"
+                               class="form-control input-underline input-lg required" placeholder="密码">
+                    </div>
+                    <div class="form-group clearfix">
+                        <div class="form-left">
+                            <input type="text" id="validateCode" placeholder="请输入右侧答案" name="validateCode" autocomplete="off" maxlength="5"
+                                   class="txt required pull-left input-underline" style="line-height:44px;width: 100%"
+                                   aria-required="true">
+                        </div>
+                        <div class="form-right" id="code" onclick="changeCaptcha()">
+                        </div>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-white btn-outline btn-lg btn-rounded progress-login" value="登录">
+                <a href="/sys/register" class="btn btn-white btn-outline btn-lg btn-rounded progress-login">注册</a>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        changeCaptcha()
+    });
+
+    function changeCaptcha() {
+        $.get('/sys/captcha', function (ret) {
+            // $("#code").attr('src', ret)
+            $("#code").html(ret)
+        })
+    };
+</script>
+</body>
+</html>

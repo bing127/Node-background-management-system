@@ -1,0 +1,318 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/bootstraptable.nsp" %}
+<head>
+    <style>
+        #left {
+            -webkit-transition: width 0.5s;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#table').bootstrapTable({
+            //请求方法
+            method: 'get',
+            dataType: "json",
+            //是否显示行间隔色
+            striped: true,
+            //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            cache: false,
+            //是否显示分页（*）
+            pagination: true,
+
+            pageList: [10, 25, 50, 100],
+            //这个接口需要处理bootstrap table传递的固定参数,并返回特定格式的json数据
+            url: "/sys/dict/data",
+            //默认值为 'limit',传给服务端的参数为：limit, offset, search, sort, order Else
+            //queryParamsType:'',
+            ////查询参数,每次调用是会带上这个参数，可自定义
+            queryParams: function (params) {
+                var searchParam = $("#searchForm").serializeJSON();
+                searchParam.pageNo = params.limit === undefined ? "1" : params.offset / params.limit + 1;
+                searchParam.pageSize = params.limit === undefined ? -1 : params.limit;
+                searchParam.orderBy = params.sort === undefined ? "" : params.sort + " " + params.order;
+                return searchParam;
+            },
+            //分页方式：client客户端分页，server服务端分页（*）
+            sidePagination: "server",
+            contextMenuTrigger: "right",//pc端 按右键弹出菜单
+            contextMenuTriggerMobile: "press",//手机端 弹出菜单，click：单击， press：长按。
+            contextMenu: '#context-menu',
+            onContextMenuItem: function (row, $el) {
+                if ($el.data("item") == "edit") {
+                    edit(row.id);
+                } else if ($el.data("item") == "delete") {
+                    del(row.id);
+                }
+            },
+
+            columns: [{
+                checkbox: true
+
+            }, {
+                field: 'name',
+                title: '类型',
+                sortable: true
+            }, {
+                field: 'des',
+                title: '描述',
+                sortable: true
+            }, {
+                field: 'operate',
+                title: '操作',
+                align: 'center',
+                events: {
+                    'click .view': function (e, value, row, index) {
+                        jp.openDialogView('查看字典', '/sys/dict/form?id=' + row.id, '800px', '500px');
+                    },
+                    'click .edit': function (e, value, row, index) {
+                        jp.openDialog('编辑字典', '/sys/dict/form?id=' + row.id, '800px', '500px');
+                    },
+                    'click .del': function (e, value, row, index) {
+                        del(row.id);
+                    },
+                    'click .setDictValue': function (e, value, row, index) {
+                        $("#left").attr("class", "col-sm-6");
+                        setTimeout(function () {
+                            $("#right").fadeIn(500);
+                        }, 500)
+                        $("#dictTypeLabel").html(row.name);
+                        $("#dictTypeId").val(row.id);
+                        $('#dictValueTable').bootstrapTable("refresh", {query: {dictTypeId: row.id}})
+                    }
+                },
+                formatter: function operateFormatter(value, row, index) {
+                    return [
+                            '<a href="#" class="view" title="查看" ><i class="fa fa-eye"></i> </a>',
+                        {% if userRole.permission === '1' %}
+                            '<a href="#" class="edit" title="修改"><i class="fa fa-edit"></i> </a>',
+                            '<a href="#" class="del" title="删除"><i class="fa fa-trash"></i> </a>',
+                            {% endif %}
+                            '<a href="#" class="setDictValue"  title="管理键值"><i class="fa fa-cog"></i> </a>'
+                ].
+                    join('');
+                }
+            }]
+
+        });
+
+        if (navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i)) {//如果是移动端，默认关闭tab
+            $('#table').bootstrapTable("toggleView");
+        }
+
+        $('#table').on('check.bs.table uncheck.bs.table load-success.bs.table ' +
+            'check-all.bs.table uncheck-all.bs.table', function () {
+            $('#remove').prop('disabled', !$('#table').bootstrapTable('getSelections').length);
+            $('#edit').prop('disabled', $('#table').bootstrapTable('getSelections').length != 1);
+        });
+
+        $("#search").click("click", function () {// 绑定查询按扭
+            $('#table').bootstrapTable('refresh');
+        });
+        $("#reset").click("click", function () {// 绑定查询按扭
+            $("#searchForm  input").val("");
+            $("#searchForm  select").val("");
+            $('#table').bootstrapTable('refresh');
+        });
+
+    });
+
+    function getIdSelections() {
+        return $.map($("#table").bootstrapTable('getSelections'), function (row) {
+            return row.id
+        });
+    }
+
+    function add() {
+        jp.openDialog('新建字典', '/sys/dict/form', '800px', '500px')
+    }
+
+    function edit(id) {
+        if (!id) {
+            id = getIdSelections();
+        }
+        jp.openDialog('编辑字典', "/sys/dict/form?id=" + id, '800px', '500px')
+
+    }
+
+    function del(ids) {
+        if (!ids) {
+            ids = getIdSelections();
+        }
+        jp.loading();
+        jp.confirm('确认要删除选中字典吗？', function () {
+            $.get("/sys/dict/deleteAll?ids=" + ids, function (data) {
+                if (data.success) {
+                    $('#table').bootstrapTable('refresh');
+                    jp.success(data.msg);
+                } else {
+                    jp.error(data.msg);
+                }
+            })
+        })
+    }
+
+
+    $(document).ready(function () {
+        var $dictValueTable = $('#dictValueTable').bootstrapTable({
+            //请求方法
+            method: 'get',
+            dataType: "json",
+            //是否显示行间隔色
+            striped: true,
+            //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            cache: false,
+            //是否显示分页（*）
+            pagination: false,
+            //这个接口需要处理bootstrap table传递的固定参数,并返回特定格式的json数据
+            url: "/sys/dict/getDictValue",
+            //默认值为 'limit',传给服务端的参数为：limit, offset, search, sort, order Else
+            //queryParamsType:'',
+            ////查询参数,每次调用是会带上这个参数，可自定义
+            queryParams: function (params) {
+                return {dictTypeId: $("#dictTypeId").val()};
+            },
+            //分页方式：client客户端分页，server服务端分页（*）
+            sidePagination: "server",
+            columns: [{
+                field: 'name',
+                title: '标签'
+            }, {
+                field: 'key',
+                title: '键值'
+            }, {
+                field: 'operate',
+                title: '操作',
+                align: 'center',
+                events: {
+                    'click .edit': function (e, value, row, index) {
+                        jp.openDialog('编辑键值', '/sys/dict/dictValueForm?dictTypeId=' + $("#dictTypeId").val() + "&dictValueId=" + row.id, '800px', '500px', $dictValueTable);
+                    },
+                    'click .del': function (e, value, row, index) {
+                        jp.confirm('确认要删除键值吗？', function () {
+                            jp.loading();
+                            $.get('/sys/dict/deleteDictValue?dictValueId=' + row.id + '&dictTypeId=' + $("#dictTypeId").val(), function (data) {
+                                if (data.success) {
+                                    $('#dictValueTable').bootstrapTable("refresh");
+                                    jp.success(data.msg);
+                                } else {
+                                    jp.error(data.msg);
+                                }
+                            })
+                        });
+                    }
+                },
+                formatter: function operateFormatter(value, row, index) {
+                    return [
+                        {% if userRole.permission === '1' %}
+                        '<a href="#" class="edit" title="编辑" >[编辑] </a>',
+                        '<a href="#" class="del" title="删除" >[删除] </a>'
+                    {% endif %}
+                ].
+                    join('');
+                }
+            }]
+
+        });
+
+        if (navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i)) {//如果是移动端
+            $('#dictValueTable').bootstrapTable("toggleView");
+        }
+
+        $("#dictValueButton").click(function () {
+
+            jp.openDialog('添加键值', '/sys/dict/dictValueForm?dictTypeId=' + $("#dictTypeId").val(), '800px', '500px', $dictValueTable);
+        });
+
+    });
+</script>
+<body>
+<div class="wrapper wrapper-content">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">字典列表</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div id="left" class="col-sm-12">
+                    <!-- 搜索 -->
+                    <div class="accordion-group">
+                        <div id="collapseTwo" class="accordion-body collapse">
+                            <div class="accordion-inner">
+                                <form id="searchForm" class="form form-horizontal well clearfix">
+                                    <div class="col-xs-12 col-sm-6 col-md-4">
+                                        <label class="label-item single-overflow pull-left" title="类型：">类型：</label>
+                                        <input id="type" name="type" class="form-control m-b"/>
+                                    </div>
+                                    <div class="col-xs-12 col-sm-6 col-md-4">
+                                        <label class="label-item single-overflow pull-left" title="描述">描述：</label>
+                                        <input id="description" name="description" class="form-control m-b"/>
+                                    </div>
+                                    <div class="col-xs-12 col-sm-6 col-md-4">
+                                        <div style="margin-top:26px">
+                                            <a id="search" class="btn btn-primary btn-rounded  btn-bordered btn-sm"><i
+                                                    class="fa fa-search"></i> 查询</a>
+                                            <a id="reset" class="btn btn-primary btn-rounded  btn-bordered btn-sm"><i
+                                                    class="fa fa-refresh"></i> 重置</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 工具栏 -->
+                    <div id="toolbar">
+                        {% if userRole.permission === '1' %}
+                            <a id="add" class="btn btn-primary" onclick="add()"><i class="glyphicon glyphicon-plus"></i>
+                                新建</a>
+                        {% endif %}
+                        <a class="accordion-toggle btn btn-default " data-toggle="collapse" data-parent="#accordion2"
+                           href="#collapseTwo">
+                            <i class="fa fa-search"></i> 检索
+                        </a>
+                    </div><!-- 工具栏结束 -->
+
+                    <!-- 表格 -->
+                    <table id="table"
+                           data-toolbar="#toolbar"
+                           data-id-field="id">
+                    </table>
+
+                    <!-- context menu -->
+                    <ul id="context-menu" class="dropdown-menu">
+                        <li data-item="edit"><a>编辑</a></li>
+                        <li data-item="delete"><a>删除</a></li>
+                        <li data-item="action1"><a>取消</a></li>
+                    </ul>
+                </div>
+
+                <div id="right" class="panel panel-default col-sm-6" style="display:none">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><label>键值列表，所属类型: </label><font id="dictTypeLabel"></font><input
+                                type="hidden" id="dictTypeId"/></h3>
+                    </div>
+                    <div class="panel-body">
+                        {% if userRole.permission === '1' %}
+                        <div id="dictValueToolbar">
+                            <button id="dictValueButton" class="btn btn-outline btn-primary" title="添加键值"><i
+                                    class="fa fa-plus-circle"></i> 添加键值
+                            </button>
+                        </div>
+                        {% endif %}
+                        <!-- 表格 -->
+                        <table id="dictValueTable"
+                               data-toolbar="#dictValueToolbar"
+                               data-id-field="id">
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

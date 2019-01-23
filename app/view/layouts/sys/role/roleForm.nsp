@@ -1,0 +1,148 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/bootstraptable.nsp" %}
+<html>
+<head>
+    <title>角色管理</title>
+    <meta name="decorator" content="ani"/>
+</head>
+<body class="bg-white">
+<form id="inputForm" modelAttribute="menu" action="/sys/menu/save" method="post" class="form-horizontal">
+    <input type="hidden" id="id" name="id" value="{{ role.role_id }}"/>
+    <input type="hidden" id="roleId" name="roleId" value="{{ role.ids }}"/>
+    <table class="table table-bordered">
+        <tbody>
+        <tr>
+            <td class="width-15 active"><label class="pull-right"><font color="red">*</font> 名称:</label></td>
+            <td class="width-35">
+                <input id="name" name="name" htmlEscape="false" value="{{ role.role_name if role.role_name else '' }}"
+                       maxlength="50" class="required form-control "/>
+            </td>
+        </tr>
+        <tr>
+            <td class="active"><label class="pull-right">权限:</label></td>
+            <td>
+                <select id="permission" name="permission" class="form-control required">
+                    {% if role.permission == '1' %}
+                    <option value="1" selected="selected">全部权限</option>
+                    <option value="2">查看权限</option>
+                    {% elif role.permission == '2' %}
+                    <option value="1">全部权限</option>
+                    <option value="2" selected="selected">查看权限</option>
+                    {% else %}
+                    <option value="1">全部权限</option>
+                    <option value="2">查看权限</option>
+                    {% endif %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="width-15 active"><label class="pull-right"><font color="red">*</font> 菜单权限:</label></td>
+            <td class="width-35">
+                <div class="input-group" style="width:100%">
+                    <input id="role" name="role.name" readonly="readonly" type="text" value="{{ role.names }}"
+                           data-msg-required="" class="form-control required" aria-required="true">
+                    <span class="input-group-btn">
+	       		 <button type="button" id="roleButton" class="btn  btn-primary  "><i class="fa fa-search"></i>
+	             </button>
+	             	 <button type="button" id="roleDelButton" class="close" data-dismiss="alert"
+                             style="position: absolute; top: 5px; right: 53px; z-index: 999; display: block;">×</button>
+       		 </span>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</form>
+</body>
+</html>
+<script type="text/javascript">
+    var validateForm;
+    var $treeTable; // 父页面table表格id
+    var $topIndex;//openDialog的 dialog index
+    function doSubmit(treeTable, index) {//回调函数，在编辑和保存动作时，供openDialog调用提交表单。
+        if (validateForm.form()) {
+            $treeTable = treeTable;
+            $topIndex = index;
+            $("#inputForm").submit();
+            return true;
+        }
+        return false;
+    }
+
+    $(document).ready(function () {
+        $("#name").focus();
+        validateForm = $("#inputForm").validate({
+            submitHandler: function (form) {// 必须写在验证前面，否则无法ajax提交
+                jp.loading();
+                jp.post("/sys/role/save", $('#inputForm').serialize(), function (data) {
+                    if(data.success){
+                        $treeTable.bootstrapTable('refresh');
+                        jp.success(data.msg);
+
+                    }else{
+                        jp.error(data.msg);
+                    }
+
+                    jp.close($topIndex);//关闭dialog
+                });
+            },
+            errorPlacement: function (error, element) {// 自定义提示错误位置
+                $("#messageBox").text("输入有误，请先更正。");
+                if (element.is(":checkbox") || element.is(":radio") || element.parent().is(".input-append")) {
+                    error.appendTo(element.parent().parent());
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+
+    });
+    $(document).ready(function () {
+        $("#roleButton, #roleName").click(function () {
+            // 是否限制选择，如果限制，设置为disabled
+            if ($("#roleButton").hasClass("disabled")) {
+                return true;
+            }
+            // 正常打开
+            top.layer.open({
+                type: 2,
+                area: ['300px', '420px'],
+                title: "选择菜单",
+                ajaxData: {selectIds: $("#roleId").val()},
+                content: "/sys/role/treeView",
+                btn: ['确定', '关闭']
+                , yes: function (index, layero) { //或者使用btn1
+                    var tree = layero.find("iframe")[0].contentWindow.tree;//h.find("iframe").contents();
+                    var ids = [], names = [], nodes = [];
+                    if ("" == "true") {
+                        nodes = tree.get_checked(true);
+                    } else {
+                        nodes = tree.get_selected(true);
+                    }
+                    for (var i = 0; i < nodes.length; i++) {//
+                        ids.push(nodes[i].id);
+                        names.push(nodes[i].text);//
+                    }
+                    $("#roleId").val(ids.join(",").replace(/u_/ig, ""));
+                    $("#role").val(names.join(","));
+                    $("#role").focus();
+                    top.layer.close(index);
+                },
+                cancel: function (index) { //或者使用btn2
+                    //按钮【按钮二】的回调
+                }
+            });
+        });
+        $("#roleDelButton").click(function () {
+            // 是否限制选择，如果限制，设置为disabled
+            if ($("#roleButton").hasClass("disabled")) {
+                return true;
+            }
+            // 清除
+            $("#roleId").val("");
+            $("#role").val("");
+            $("#role").focus();
+
+        });
+    })
+</script>

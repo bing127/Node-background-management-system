@@ -1,0 +1,192 @@
+{% include "../../../includes/common.nsp" %}
+{% include "../../../includes/bootstraptable.nsp" %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#table').bootstrapTable({
+            //请求方法
+            method: 'get',
+            dataType: "json",
+            //是否显示行间隔色
+            striped: true,
+            //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+            cache: false,
+            //是否显示分页（*）
+            pagination: true,
+            //这个接口需要处理bootstrap table传递的固定参数,并返回特定格式的json数据
+            url: "/sys/role/data",
+            //默认值为 'limit',传给服务端的参数为：limit, offset, search, sort, order Else
+            //queryParamsType:'',
+            ////查询参数,每次调用是会带上这个参数，可自定义
+            queryParams : function(params) {
+                var searchParam = $("#searchForm").serializeJSON();
+                searchParam.pageNo = params.limit === undefined? "1" :params.offset/params.limit+1;
+                searchParam.pageSize = params.limit === undefined? "1" : params.limit;
+                return searchParam;
+            },
+            //分页方式：client客户端分页，server服务端分页（*）
+            sidePagination: "server",
+            contextMenuTrigger:"right",//pc端 按右键弹出菜单
+            contextMenuTriggerMobile:"press",//手机端 弹出菜单，click：单击， press：长按。
+            contextMenu: '#context-menu',
+            onContextMenuItem: function(row, $el){
+                if($el.data("item") == "edit"){
+                    edit(row.id);
+                } else if($el.data("item") == "delete"){
+                    del(row.id);
+                }
+            },
+            columns: [{
+                checkbox: true
+            }, {
+                field: 'name',
+                title: '角色名称',
+                formatter:function(value, row, index){
+                    return '<a  href="#" onclick="jp.openDialogView(\'查看角色信息\', \'/sys/role/form?id='+row.id+'\',\'800px\', \'500px\')">'+value+'</a>'
+                }
+            },{
+                field: 'created_at',
+                title: '创建时间',
+                formatter:function(value, row, index){
+                    return '<div>'+ GMTToStr(value) +'</div>'
+                }
+            },{
+                field: 'operate',
+                title: '操作',
+                align: 'center',
+                events: {
+                    'click .view': function (e, value, row, index) {
+                        jp.openDialogView('查看角色', '/sys/role/form?id=' + row.id,'800px', '500px');
+                    },
+                    'click .edit': function (e, value, row, index) {
+                        jp.openDialog('编辑角色', '/sys/role/form?id=' + row.id,'800px', '500px');
+                    },
+                    'click .del': function (e, value, row, index) {
+                        del(row.id);
+                    }
+                },
+                formatter:  function operateFormatter(value, row, index) {
+                    return [
+                        '<a href="#" class="view" title="查看" ><i class="fa fa-eye"></i> </a>',
+                        {% if userRole.permission === '1' %}
+                        '<a href="#" class="edit" title="修改"><i class="fa fa-edit"></i> </a>',
+                        '<a href="#" class="del" title="删除"><i class="fa fa-trash"></i> </a>',
+                    {% endif %}
+                ].join('');
+                }
+            }]
+
+        });
+
+        if(navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i)){//如果是移动端，默认关闭tab
+            $('#table').bootstrapTable("toggleView");
+        }
+
+        $('#table').on('check.bs.table uncheck.bs.table load-success.bs.table ' +
+            'check-all.bs.table uncheck-all.bs.table', function () {
+            $('#remove').prop('disabled', ! $('#table').bootstrapTable('getSelections').length);
+            $('#edit').prop('disabled', $('#table').bootstrapTable('getSelections').length!=1);
+        });
+
+        $("#search").click("click", function() {// 绑定查询按扭
+            $('#table').bootstrapTable('refresh');
+        });
+        $("#reset").click("click", function() {// 绑定查询按扭
+            $("#searchForm  input").val("");
+            $("#searchForm  select").val("");
+            $('#table').bootstrapTable('refresh');
+        });
+
+    });
+
+    function getIdSelections() {
+        return $.map($("#table").bootstrapTable('getSelections'), function (row) {
+            return row.id
+        });
+    }
+
+    function add(){
+        jp.openDialog('新建角色', '/sys/role/form','800px', '500px')
+    }
+
+    function edit(id){
+        if(!id){
+            id = getIdSelections();
+        }
+        jp.openDialog('编辑角色', "/sys/role/form?id=" + id,'800px', '500px')
+
+    }
+    function del(ids){
+        if(!ids){
+            ids = getIdSelections();
+        }
+        jp.confirm('确认要删除选中角色吗？',  function(){
+            jp.loading();
+            jp.get("/sys/role/delete?ids=" + ids, function(data){
+                if(data.success){
+                    $('#table').bootstrapTable('refresh');
+                    jp.success(data.msg);
+                }else{
+                    jp.error(data.msg);
+                }
+            })
+        })
+    }
+
+    function GMTToStr(time){
+        let date = new Date(time)
+        let Str=date.getFullYear() + '-' +
+            addZero((date.getMonth() + 1)) + '-' +
+            addZero(date.getDate()) + ' ' +
+            addZero(date.getHours()) + ':' +
+            addZero(date.getMinutes()) + ':' +
+            addZero(date.getSeconds())
+        return Str
+    }
+    function addZero(str) {
+        str = parseInt(str)
+        str = str<10?'0'+str:str
+        return str
+    }
+</script>
+<body>
+<div class="wrapper wrapper-content">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">用户角色</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div id="left" class="col-sm-12">
+                    <!-- 工具栏 -->
+                    <div id="toolbar">
+                        {% if userRole.permission === '1' %}
+                        <a id="add" class="btn btn-primary" onclick="add()"><i class="glyphicon glyphicon-plus"></i>
+                            新建</a>
+                        <button id="edit" class="btn btn-success" disabled onclick="edit()">
+                            <i class="glyphicon glyphicon-edit"></i> 修改
+                        </button>
+                        <button id="remove" class="btn btn-danger" disabled onclick="del()">
+                            <i class="glyphicon glyphicon-remove"></i> 删除
+                        </button>
+                        {% endif %}
+                    </div><!-- 工具栏结束 -->
+                    <!-- 表格 -->
+                    <table id="table"
+                           data-toolbar="#toolbar"
+                           data-id-field="id">
+                    </table>
+                    <!-- context menu -->
+                    {% if userRole.permission === '1' %}
+                    <ul id="context-menu" class="dropdown-menu">
+                        <li data-item="edit"><a>编辑</a></li>
+                        <li data-item="delete"><a>删除</a></li>
+                        <li data-item="action1"><a>取消</a></li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
