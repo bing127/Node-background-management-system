@@ -1,100 +1,179 @@
 {% include "../../includes/common.nsp" %}
 <title>{{ product.productDescription }} 注册</title>
 <style>
- #messageBox{
-  color: #cc5965;
- }
- form .form-left {
-  width: 72%;
-  float: left;
- }
- form .form-right {
-  float: right;
-  width: 24%;
- }
- form .form-left input{
-  height: 44px;
-  font-size: 16px;
-  text-indent: 0;
-  outline: none;
-  padding: 0 16px;
-  box-sizing: border-box;
-  color: #fff;
- }
- #code{
-  overflow: hidden;
-  border-radius: 6px;
-  height: 44px;
- }
+    #messageBox{
+        font-weight: bold;
+    }
+    .fail {
+        color: #cc5965;
+    }
+    .success {
+        color: #fff;
+    }
+    form .form-left {
+        width: 72%;
+        float: left;
+    }
+
+    form .form-right {
+        float: right;
+        width: 24%;
+    }
+
+    form .form-left input {
+        height: 44px;
+        font-size: 16px;
+        text-indent: 0;
+        outline: none;
+        padding: 0 16px;
+        box-sizing: border-box;
+        color: #fff;
+    }
+
+    #code {
+        overflow: hidden;
+        border-radius: 6px;
+        height: 44px;
+    }
+
+    .form-right button {
+        height: 44px;
+        background: rgba(0, 0, 0, 0);
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: 100%;
+    }
 </style>
 <script>
- if (window.top !== window.self) {
-  window.top.location = window.location;
- }
+    if (window.top !== window.self) {
+        window.top.location = window.location;
+    }
 </script>
 <script type="text/javascript">
- $(document).ready(function () {
-  $("#loginForm").validate({
-   rules: {},
-   messages: {
-    username: {required: "请填写用户名."}, password: {required: "请填写密码."},
-    validateCode: {remote: "验证码不正确.", required: "请填写验证码."}
-   },
-   errorLabelContainer: "#messageBox",
-   errorPlacement: function (error, element) {
-    error.appendTo($("#loginError").parent());
-   }
-  });
- });
- // 如果在框架或在对话框中，则弹出提示并跳转到首页
- if (self.frameElement && self.frameElement.tagName == "IFRAME" || $('#left').length > 0 || $('.jbox').length > 0) {
-  alert('未登录或登录超时。请重新登录，谢谢！');
-  top.location = "/";
- }
+    $(document).ready(function () {
+        $("#loginForm").validate({
+            rules: {
+            },
+            submitHandler: function (form) {
+                jp.loading();
+                form.submit();
+            },
+            messages: {
+                confirmNewPassword: {equalTo: "输入与上面相同的密码"},
+                username: {remote: "此用户名已经被注册!", required: "请填写用户名."},
+                password: {required: "请填写密码."},
+                mail: {required: "请填写邮箱."},
+                validateCode: {remote: "验证码不正确.", required: "请填写验证码."}
+            },
+            errorContainer: "#messageBox",
+            errorPlacement: function (error, element) {
+                $("#messageBox").text("输入有误，请先更正。");
+                error.insertAfter(element);
+            }
+        });
+    });
+
+    jQuery.validator.addMethod("isMail", function (value, element) {
+        var length = value.length;
+        var email = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+        return this.optional(element) || (email.test(value))
+    }, "邮箱格式不正确");
+    // 如果在框架或在对话框中，则弹出提示并跳转到首页
+    if (self.frameElement && self.frameElement.tagName == "IFRAME" || $('#left').length > 0 || $('.jbox').length > 0) {
+        alert('未登录或登录超时。请重新登录，谢谢！');
+        top.location = "${ctx}";
+    }
 </script>
 <body>
 <div class="login-page">
- <div class="row">
-  <div class="col-md-4 col-lg-4 col-md-offset-4 col-lg-offset-4" style="margin-top:5%">
-   <img class="img-circle" src="/public/static/common/images/flat-avatar.png" class="user-avatar"/>
-   <h1>{{ product.productName }}</h1>
-   <div id="messageBox" showType="1">
-    {{ msg }}
-   </div>
-   <form id="loginForm" role="form" action="/sys/loginAction" method="post">
-    <div class="form-content">
-     <div class="form-group">
-      <input type="text" id="username" name="username"
-             class="form-control input-underline input-lg required" autocomplete="off"
-             placeholder="用户名">
-     </div>
-     <div class="form-group">
-      <input type="password" id="password" name="password" autocomplete="off"
-             class="form-control input-underline input-lg required" placeholder="密码">
-     </div>
-     <div class="form-group">
-      <input type="password" id="mail" name="password" autocomplete="off"
-             class="form-control input-underline input-lg required" placeholder="邮箱">
-     </div>
-     <div class="form-group clearfix">
-      <div class="form-left">
-       <input type="text" id="validateCode" placeholder="请输入右侧答案" name="validateCode" autocomplete="off" maxlength="5"
-              class="txt required pull-left input-underline" style="line-height:44px;width: 100%"
-              aria-required="true">
-      </div>
-      <div class="form-right" onclick="changeCaptcha()">
-       获取邮箱验证码
-      </div>
-     </div>
+    <div class="row">
+        <div class="col-md-4 col-lg-4 col-md-offset-4 col-lg-offset-4" style="margin-top:5%">
+            <img class="img-circle" src="/public/static/common/images/flat-avatar.png" class="user-avatar"/>
+            <h1>{{ product.productName }}</h1>
+            {% if msg %}
+            <div id="messageBox" class="{{ 'success' if success else 'fail' }}">
+                {{ msg }}
+            </div>
+            {% endif %}
+            <form id="loginForm" role="form" action="/sys/regAction" method="post">
+                <div class="form-content">
+                    <div class="form-group">
+                        <input type="text" id="username" name="username" maxlength="20" minlength="3"
+                               class="form-control input-underline input-lg required" autocomplete="off"
+                               placeholder="用户名">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" maxlength="20" minlength="3"  id="password" name="password" autocomplete="off"
+                               class="form-control input-underline input-lg required" placeholder="密码">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" maxlength="20" minlength="3"  id="confirmNewPassword" name="confirmNewPassword" autocomplete="off"
+                               class="form-control input-underline input-lg required" equalTo="#password"
+                               placeholder="重复密码">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="mail" name="mail" autocomplete="off"
+                               class="form-control input-underline input-lg required isMail" placeholder="邮箱">
+                    </div>
+                    <div class="form-group clearfix">
+                        <div class="form-left">
+                            <input type="text" id="validateCode" placeholder="请输入邮箱验证码" name="validateCode"
+                                   autocomplete="off" maxlength="6" minlength="6"
+                                   class="txt required pull-left input-underline" style="line-height:44px;width: 100%"
+                                   aria-required="true">
+                        </div>
+                        <div class="form-right" id="code" onclick="getCode()">
+                            <button>获取验证码</button>
+                        </div>
+                    </div>
+                    <input type="reset" class="btn btn-white btn-outline btn-lg btn-rounded progress-login" value="重置">
+                    <input type="submit" class="btn btn-white btn-outline btn-lg btn-rounded progress-login" value="注册">
+                </div>
+            </form>
+            <div class="form-values center">
+                <a href="/sys/login" data-target="#login-box" class="">
+                    <font color="#fff"><i class="ace-icon fa fa-arrow-left"></i>
+                        返回登录
+                    </font>
+                </a>
+            </div>
+        </div>
     </div>
-    <input type="submit" class="btn btn-white btn-outline btn-lg btn-rounded progress-login" value="登录">
-    <a href="/sys/register" class="btn btn-white btn-outline btn-lg btn-rounded progress-login">注册</a>
-   </form>
-  </div>
- </div>
+</div>
 </div>
 <script>
+    var timep = 600;
 
+    function getCode() {
+        jp.post('/sys/sendmail',{
+            data:$('#mail').val()
+        },function (ret) {
+            if (ret.success){
+                jp.success(ret.msg);
+                countdown();
+            } else {
+                jp.warning(ret.msg)
+            }
+        })
+    }
+
+
+    function countdown() {
+        if (timep == 0) {
+            obj.disabled = false;
+            $('#code').find('button').attr('disabled', false);
+            $('#code').find('button').text('获取验证码');
+            timep = 600;
+            return;
+        } else {
+            $('#code').find('button').attr('disabled', true);
+            $('#code').find('button').text(timep + 's');
+            timep--;
+        }
+        setTimeout(function () {
+            countdown();
+        }, 1000)
+    };
 </script>
 </body>
 </html>
